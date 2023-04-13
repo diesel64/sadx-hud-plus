@@ -2,6 +2,7 @@
 #include "SADXModLoader.h"
 #include "IniFile.hpp"
 #include "sadx.h"
+#include "sadx-utils.h"
 
 using namespace uiscale;
 
@@ -9,6 +10,7 @@ static const HelperFunctions* gHelperFunctions;
 
 static bool boolShowScore = false;
 static bool boolRemoveLimits = false;
+static bool boolSuperSonic = false;
 
 void DrawScore(Float& y)
 {
@@ -95,15 +97,66 @@ void DrawRings(Float& y)
 	y += 16;
 }
 
+static NJS_TEXNAME SUPERSONIC_EXTRA_TEXNAME[6];
+NJS_TEXLIST SUPERSONIC_EXTRA_TEXLIST = { arrayptrandlength(SUPERSONIC_EXTRA_TEXNAME) };
+
+enum SUPERSONIC_EXTRA
+{
+	SUPERSONIC_EXTRA_LIFE,
+	SUPERSONIC_EXTRA_1UP
+};
+
+static NJS_TEXANIM SUPERSONIC_EXTRA_TEXANIM[2] = {
+	{ 0x20, 0x20, 0, 0, 0, 0, 0x100, 0x100, SUPERSONIC_EXTRA_LIFE, 0x20 },
+	{ 0x20, 0x20, 0x10, 0x10, 0, 0, 0xFF, 0xFF, SUPERSONIC_EXTRA_1UP, 0x20 }
+};
+
+static NJS_SPRITE SUPERSONIC_EXTRA_SPRITE = { {}, 1.0f, 1.0f, 0, &SUPERSONIC_EXTRA_TEXLIST, SUPERSONIC_EXTRA_TEXANIM };
+
+bool IsSuperSonic(playerwk* pwp)
+{
+	return (pwp->equipment & Upgrades_SuperSonic);
+}
+
+bool IsSuperSonic(int pnum)
+{
+	return playerpwp[pnum] && IsSuperSonic(playerpwp[pnum]);
+}
+
 void DrawLives()
 {
+	auto player = playertwp[0];
+	auto pwp = playerpwp[0];
 	gHelperFunctions->PushScaleUI(Align::Align_Bottom, false, 1.0f, 1.0f);
-
-	njSetTexture(&CON_REGULAR_TEXLIST);
 
 	sprite_score.p.x = 16.0f;
 	sprite_score.p.y = ScreenRaitoY * 480.0f - 64.0f;
-	njDrawSprite2D_ForcePriority(&sprite_score, gu8flgPlayingMetalSonic ? 24 : GetPlayerNumber() + TEX_CON_ZANKI, -1.501f, NJD_SPRITE_ALPHA);
+
+	if (!boolSuperSonic)
+	{
+		njSetTexture(&CON_REGULAR_TEXLIST);
+
+		njDrawSprite2D_ForcePriority(&sprite_score, gu8flgPlayingMetalSonic ? 24 : GetPlayerNumber() + TEX_CON_ZANKI, -1.501f, NJD_SPRITE_ALPHA);
+	}
+	else
+	{
+		if (player && TWP_CHAR(player) == Characters_Sonic)
+		{
+			if (pwp && IsSuperSonic(pwp))
+			{
+				njSetTexture(&SUPERSONIC_EXTRA_TEXLIST);
+
+				SUPERSONIC_EXTRA_SPRITE.p.x = sprite_score.p.x;
+				SUPERSONIC_EXTRA_SPRITE.p.y = sprite_score.p.y;
+				njDrawSprite2D_ForcePriority(&SUPERSONIC_EXTRA_SPRITE, SUPERSONIC_EXTRA_LIFE, -1.501f, NJD_SPRITE_ALPHA);
+			}
+			else {
+				njSetTexture(&CON_REGULAR_TEXLIST);
+
+				njDrawSprite2D_ForcePriority(&sprite_score, gu8flgPlayingMetalSonic ? 24 : GetPlayerNumber() + TEX_CON_ZANKI, -1.501f, NJD_SPRITE_ALPHA);
+			}
+		}
+	}
 
 	sprite_score.p.x = 49.0f;
 	sprite_score.p.y += 8.0f;
@@ -222,6 +275,7 @@ extern "C"
 		
 		boolShowScore = config->getBool("", "ShowScore", true);
 		boolRemoveLimits = config->getBool("", "RemoveLimits", true);
+		boolSuperSonic = config->getBool("", "SuperSonicCompatibility", true);
 
 		gHelperFunctions = &helperFunctions;
 
@@ -242,6 +296,11 @@ extern "C"
 		if (config->getBool("", "ShowAnimalsPause", true))
 		{
 			WriteJump((void*)0x46B650, ExtraDisplayInit_r); // Add pause display to minimal task
+		}
+		
+		if (config->getBool("", "SuperSonicCompatibility", true))
+		{
+			helperFunctions.RegisterCharacterPVM(Characters_Sonic, { "SUPERSONIC_EXTRA", &SUPERSONIC_EXTRA_TEXLIST });
 		}
 		
 		delete config;
