@@ -7,7 +7,7 @@
         <HelpText>This will allow the ring counter to go up to 32767 and the life counter up to 127.</HelpText>
       </Property>
       <Property name="ShowAnimalsPause" type="bool" defaultvalue="True" display="Show collected animals in pause menu"/>
-      <Property name="SuperSonicCompatibility" type="bool" defaultvalue="True" display="Super Sonic compatibility">
+      <Property name="SuperSonicCompatibility" type="bool" defaultvalue="False" display="Super Sonic compatibility">
         <HelpText>This will allow the life icon to update properly if using the Super Sonic mod.</HelpText>
       </Property>
     </Group>
