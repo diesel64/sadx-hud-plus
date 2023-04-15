@@ -140,21 +140,19 @@ void DrawLives()
 	}
 	else
 	{
-		if (player && TWP_CHAR(player) == Characters_Sonic)
+		if ((player && TWP_CHAR(player) == Characters_Sonic) && (pwp && IsSuperSonic(pwp)))
 		{
-			if (pwp && IsSuperSonic(pwp))
-			{
-				njSetTexture(&SUPERSONIC_EXTRA_TEXLIST);
+			njSetTexture(&SUPERSONIC_EXTRA_TEXLIST);
 
-				SUPERSONIC_EXTRA_SPRITE.p.x = sprite_score.p.x;
-				SUPERSONIC_EXTRA_SPRITE.p.y = sprite_score.p.y;
-				njDrawSprite2D_ForcePriority(&SUPERSONIC_EXTRA_SPRITE, SUPERSONIC_EXTRA_LIFE, -1.501f, NJD_SPRITE_ALPHA);
-			}
-			else {
-				njSetTexture(&CON_REGULAR_TEXLIST);
+			SUPERSONIC_EXTRA_SPRITE.p.x = sprite_score.p.x;
+			SUPERSONIC_EXTRA_SPRITE.p.y = sprite_score.p.y;
+			njDrawSprite2D_ForcePriority(&SUPERSONIC_EXTRA_SPRITE, SUPERSONIC_EXTRA_LIFE, -1.501f, NJD_SPRITE_ALPHA);
+		}
+		else
+		{
+			njSetTexture(&CON_REGULAR_TEXLIST);
 
-				njDrawSprite2D_ForcePriority(&sprite_score, gu8flgPlayingMetalSonic ? 24 : GetPlayerNumber() + TEX_CON_ZANKI, -1.501f, NJD_SPRITE_ALPHA);
-			}
+			njDrawSprite2D_ForcePriority(&sprite_score, gu8flgPlayingMetalSonic ? 24 : GetPlayerNumber() + TEX_CON_ZANKI, -1.501f, NJD_SPRITE_ALPHA);
 		}
 	}
 
@@ -275,7 +273,7 @@ extern "C"
 		
 		boolShowScore = config->getBool("", "ShowScore", true);
 		boolRemoveLimits = config->getBool("", "RemoveLimits", true);
-		boolSuperSonic = config->getBool("", "SuperSonicCompatibility", true);
+		boolSuperSonic = config->getBool("", "SuperSonicCompatibility", false);
 
 		gHelperFunctions = &helperFunctions;
 
